@@ -66,7 +66,11 @@ fbtap_vma_close (struct vm_area_struct *vma)
             atomic_sub_return (1, &fb->counter));
 }
 
-static int
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,1,0))
+#define vm_fault_t int
+#endif
+
+static vm_fault_t
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 fbtap_vma_fault (struct vm_fault *vmf)
 {
@@ -77,7 +81,7 @@ fbtap_vma_fault (struct vm_area_struct *vma, struct vm_fault *vmf)
 #endif
     struct page * page;
     unsigned long offset = vmf->pgoff << PAGE_SHIFT;
-    int ret = 0;
+    vm_fault_t ret = 0;
     struct fbtap_framebuffer *fb = vma->vm_private_data;
 
     if (offset > fb->size) {
